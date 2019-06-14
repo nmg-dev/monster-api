@@ -11,6 +11,9 @@ yarn-debug.log*
 yarn-error.log*
 /test/unit/coverage/
 
+# dist files
+/public/static/*/**
+
 # Editor directories and files
 .idea
 .vscode
