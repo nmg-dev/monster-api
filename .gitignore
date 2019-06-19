@@ -1,6 +1,7 @@
 # phalcon-specific
 /cache/**
 .env
+/.phalcon/**
 
 # npm
 .DS_Store
