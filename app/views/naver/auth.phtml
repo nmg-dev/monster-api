@@ -1,0 +1,16 @@
+<html>
+	<head>
+	</head>
+	<body>
+		<script>
+			_interval = setInterval(function() {
+				if(opener.window.document.querySelector('#naver-accessor').value) {
+					clearInterval(_interval);
+					window.close();
+				} else if(opener.window.document.querySelector('#naver-accessor')) {
+					opener.window.document.querySelector('#naver-accessor').value = `<?=$access ?>`;
+				}
+			}, 100);
+		</script>
+	</body>
+</html>

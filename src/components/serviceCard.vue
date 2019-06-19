@@ -1,20 +1,12 @@
 <template>
-	<v-card style="width: 100%; min-height: 50vh; max-height: 600px;">
-		<div class="card-media-jumbo">
-			<slot name="jumbo"></slot>
-		</div>
-
-		<v-card-title primary-title>
-			<div style="width: 100%;">
-				<h3>{{ service_name }}</h3>
-				<v-layout align-center justify-center>
-					<slot></slot>
-				</v-layout>
-			</div>
-		</v-card-title>
-		<v-card-actions>
-		</v-card-actions>
-	</v-card>
+	<v-list-tile avatar>
+		<v-list-tile-avatar>
+			<slot name="avatar"></slot>
+		</v-list-tile-avatar>
+		<v-list-tile-content class="service-content">
+			<slot></slot>
+		</v-list-tile-content>
+	</v-list-tile>
 </template>
 
 <script>
@@ -30,7 +22,12 @@ export default {
 </script>
 
 <style>
-.card-media-jumbo img {
-	width: 100%;
+.service-content {
+	align-items: center;
+}
+.service-content img {
+	width: 240px;
+	object-fit: cover;
+	cursor: pointer;
 }
 </style>

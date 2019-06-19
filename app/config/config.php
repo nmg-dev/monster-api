@@ -16,10 +16,11 @@ if(!defined('ENV_FILE')) {
 
 return new \Phalcon\Config([
     'database' => [
-        'adapter' => ucfirst(getenv('DATABASE_DRIVER')),
+        'adapter' => ucfirst(getenv('DATABASE_DRIVER', 'sqlite')),
         'dbname' => getenv('DATABASE_SCHEMA', './database.sqlite'),
         
         'host'        => getenv('DATABASE_HOST'),
+        'port'        => getenv('DATABASE_PORT'),
         'username'    => getenv('DATABASE_USER'),
         'password'    => getenv('DATABASE_PASS'),
         'charset'     => getenv('DATABASE_ENCODING'),
@@ -59,7 +60,7 @@ return new \Phalcon\Config([
             'client_secret' => getenv('KAKAO_CLIENT_SECRET'),
         ],
         'naver' => [
-            'api_host' => getenv('NAVER_API_HOST'),
+            'api_host' => getenv('NAVER_API_HOST', 'https://nid.naver.com'),
             'client_id' => getenv('NAVER_CLIENT_ID'),
             'client_secret' => getenv('NAVER_CLIENT_SECRET'),
         ],

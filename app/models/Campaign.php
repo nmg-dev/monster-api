@@ -1,10 +1,10 @@
 <?php
+
 namespace App\Models;
 
-class Access extends \Phalcon\Models\AbstractModel
+class Campaign extends \Phalcon\Mvc\Model
 {
     use \Phalcon\Models\SoftDeletes;
-
     /**
      *
      * @var integer
@@ -19,6 +19,12 @@ class Access extends \Phalcon\Models\AbstractModel
 
     /**
      *
+     * @var integer
+     */
+    public $account_id;
+
+    /**
+     *
      * @var string
      */
     public $uid;
@@ -27,13 +33,25 @@ class Access extends \Phalcon\Models\AbstractModel
      *
      * @var string
      */
-    public $access_token;
+    public $profile;
 
     /**
      *
      * @var string
      */
-    public $refresh_token;
+    public $period_from;
+
+    /**
+     *
+     * @var string
+     */
+    public $period_till;
+
+    /**
+     *
+     * @var string
+     */
+    public $errors;
 
     /**
      *
@@ -45,19 +63,7 @@ class Access extends \Phalcon\Models\AbstractModel
      *
      * @var string
      */
-    public $info;
-
-    /**
-     *
-     * @var string
-     */
-    public $errors;
-
-    /**
-     *
-     * @var string
-     */
-    public $expires_at;
+    public $visited_at;
 
     /**
      *
@@ -83,24 +89,28 @@ class Access extends \Phalcon\Models\AbstractModel
     public function initialize()
     {
         $this->setSchema("monsters");
-        $this->setSource("access");
-        // $this->hasMany('id', 'Model\Permissions', 'access_id', ['alias' => 'Permissions']);
-        $this->hasManyToMany('id', 
-            'Models\Permission', 'access_id', 'account_id', 
-            'Models\Account', 'id', ['alias'=>'accounts']);
+        $this->setSource("campaigns");
+        $this->hasMany('id', 'Models\Adgroup', 'campaign_id', ['alias' => 'groups']);
+        $this->hasMany('id', 'Models\Aditem', 'campaign_id', ['alias' => 'items']);
+        $this->belongsTo('account_id', 'Models\Account', 'id', ['alias' => 'account']);
     }
+
 
     public function beforeSave() {
         $this->created_timestamp();
         $this->updated_timestamp();
-        $this->timestrings(['expires_at', 'deleted_at']);
-        $this->jsonite('info');
+        $this->timestrings(['visited_at', 'deleted_at']);
+        
+        $this->jsonite('profile');
+        $this->jsonite('errors');
     }
 
     public function afterFetch() {
-        $this->jsonparse('info');
-        $this->timestamps(['expires_at', 'created_at','updated_at', 'deleted_at']);
+        $this->jsonparse('profile');
+        $this->jsonparse('errors');
+        $this->timestamps(['visited_at', 'created_at','updated_at', 'deleted_at']);
     }
+
 
     /**
      * Returns table name mapped in the model.
@@ -109,6 +119,7 @@ class Access extends \Phalcon\Models\AbstractModel
      */
     public function getSource()
     {
-        return 'access';
+        return 'campaigns';
     }
+
 }

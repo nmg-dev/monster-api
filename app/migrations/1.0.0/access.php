@@ -1,14 +1,10 @@
 <?php 
-
-use Phalcon\Db\Column;
-use Phalcon\Db\Index;
-use Phalcon\Db\Reference;
-use Phalcon\Mvc\Model\Migration;
+require_once(APP_PATH.'/migrations/ModelDefinition.php');
 
 /**
  * Class AccessMigration_100
  */
-class AccessMigration_100 extends Migration
+class AccessMigration_100 extends ModelDefinition
 {
     /**
      * Define the table structure
@@ -18,123 +14,24 @@ class AccessMigration_100 extends Migration
     public function morph()
     {
         $this->morphTable('access', [
-                'columns' => [
-                    new Column(
-                        'id',
-                        [
-                            'type' => Column::TYPE_INTEGER,
-                            'autoIncrement' => true,
-                            'size' => 1,
-                            'first' => true
-                        ]
-                    ),
-                    new Column(
-                        'service',
-                        [
-                            'type' => Column::TYPE_VARCHAR,
-                            'notNull' => true,
-                            'size' => 1,
-                            'after' => 'id'
-                        ]
-                    ),
-                    new Column(
-                        'uid',
-                        [
-                            'type' => Column::TYPE_VARCHAR,
-                            'notNull' => true,
-                            'size' => 1,
-                            'after' => 'service'
-                        ]
-                    ),
-                    new Column(
-                        'token',
-                        [
-                            'type' => Column::TYPE_VARCHAR,
-                            'size' => 1,
-                            'after' => 'uid'
-                        ]
-                    ),
-                    new Column(
-                        'refresh',
-                        [
-                            'type' => Column::TYPE_VARCHAR,
-                            'size' => 1,
-                            'after' => 'token'
-                        ]
-                    ),
-                    new Column(
-                        'status',
-                        [
-                            'type' => Column::TYPE_INTEGER,
-                            'default' => "1",
-                            'notNull' => true,
-                            'size' => 1,
-                            'after' => 'refresh'
-                        ]
-                    ),
-                    new Column(
-                        '_errors',
-                        [
-                            'type' => Column::TYPE_VARCHAR,
-                            'size' => 1,
-                            'after' => 'status'
-                        ]
-                    ),
-                    new Column(
-                        'created_at',
-                        [
-                            'type' => Column::TYPE_VARCHAR,
-                            'size' => 1,
-                            'after' => '_errors'
-                        ]
-                    ),
-                    new Column(
-                        'updated_at',
-                        [
-                            'type' => Column::TYPE_VARCHAR,
-                            'size' => 1,
-                            'after' => 'created_at'
-                        ]
-                    ),
-                    new Column(
-                        'expires_at',
-                        [
-                            'type' => Column::TYPE_VARCHAR,
-                            'size' => 1,
-                            'after' => 'updated_at'
-                        ]
-                    ),
-                    new Column(
-                        'deleted_at',
-                        [
-                            'type' => Column::TYPE_VARCHAR,
-                            'size' => 1,
-                            'after' => 'expires_at'
-                        ]
-                    )
-                ],
-            ]
-        );
+            'columns' => [
+                $this->_integer('id', ['autoIncrement'=>true, 'unsigned'=>true, 'notNull'=>true]),
+                $this->_char('service', ['size'=>12, 'notNull'=>true]),
+                $this->_varchar('uid', ['size'=>400, 'notNull'=>true]),
+                $this->_varchar('access_token', ['size'=>400]),
+                $this->_varchar('refresh_token',['size'=>400]),
+                $this->_integer('status', ['size'=>1, 'notNull'=>true, 'default'=>0]),
+                $this->_text('info'),
+                $this->_text('errors'),
+                $this->_timestamp('expires_at'),
+                $this->_timestamp('created_at'),
+                $this->_timestamp('updated_at'),
+                $this->_timestamp('deleted_at'),
+            ],
+            'indexes' => [
+                $this->_index('id'),
+                $this->_index('service,uid', 'access_uniqueness', true),
+            ],
+        ]);
     }
-
-    /**
-     * Run the migrations
-     *
-     * @return void
-     */
-    public function up()
-    {
-
-    }
-
-    /**
-     * Reverse the migrations
-     *
-     * @return void
-     */
-    public function down()
-    {
-
-    }
-
 }

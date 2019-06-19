@@ -11,6 +11,8 @@ yarn-debug.log*
 yarn-error.log*
 /test/unit/coverage/
 
+/devsample.json
+
 # dist files
 /public/static/*/**
 

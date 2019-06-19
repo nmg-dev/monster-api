@@ -10,7 +10,7 @@
     "unit": "cross-env BABEL_ENV=test karma start test/unit/karma.conf.js --single-run",
     "test": "npm run unit",
     "build": "node build/build.js",
-    "postbuild": "cp -R ./dist/static/* ./public/static/ && cp ./dist/index.html ./app/views/index.phtml"
+    "postbuild": "cp -R ./dist/static/* ./public/static/ && cp ./dist/index.html ./app/views/index/index.phtml"
   },
   "dependencies": {
     "axios": "^0.19.0",

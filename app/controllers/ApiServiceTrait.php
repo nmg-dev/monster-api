@@ -1,8 +1,7 @@
 <?php 
 
 use Phalcon\Http\Client\Request as RequestClient;
-
-use Models\Access;
+use App\Models\Access;
 
 trait ApiServiceTrait {
 	/* 
@@ -10,63 +9,87 @@ trait ApiServiceTrait {
 	 * const API_HOST
 	 */
 
-	protected abstract static function api_endpoint($endpoint);
+	// protected $__token = null;
+
+	
+
+	protected function setClientAuth($token, $token_type='Bearer') {
+		$this->__token = $token;
+		$this->__token_type = $token_type;
+	}
+
+	protected static function api_endpoint($endpoint) {
+		return self::API_HOST.'/'.$endpoint;
+	}
 
 	/* login function */
-	protected abstract function oauth_redirect_uri();
-	protected abstract function oauth_access_token($code);
-	protected abstract function oauth_refresh_token($access);
+	// protected abstract function oauth_redirect_uri();
+	// protected abstract function oauth_access_token($code);
+	// protected abstract function oauth_refresh_token($access);
 
-	protected abstract function access_parse_info();
+	protected abstract function access_parse_info($params);
 
-	protected function _api($method, $endpoint, $params) {
+	protected function _config_($key) {
+		$service = self::SERVICE_NAME;
+		return $this->config->path("services.$service.$key");
+	}
+	protected function config_host() { return $this->_config_('api_host');	}
+	protected function config_client_id() { return $this->_config_('client_id'); }
+	protected function config_client_secret() { return $this->_config_('client_secret'); }
+
+	protected function before_req(&$client, &$params) {
+	}
+	protected function after_api(&$response) {
+		return $response->body;
+	} 
+
+	protected function _req($method, $url, $params=[]) {
 		$client = RequestClient::getProvider();
-		$client->setBaseUri($this->api_endpoint($endpoint));
+		if($this->__token)
+			$client->header->set('Authorization', 
+				sprintf('%s %s', $this->__token_type, $this->__token));
+		// $this->before_req($client, $params);
+		$client->setBaseUri($url);
+		return $client->$method($url, $params);
+	}
 
-		var_dump([
-			'url' => $this->api_endpoint($endpoint),
-			'params' => $params
-		]);
-
-		$response = $client->$method($endpoint, $params);
-
-		switch($response->header->get('Content-Type')) {
-			case 'application/json':
-				return json_decode($response->body);
-			case 'text/xml':
-				return simplexml_load_string($response->body);
-			default:
-				return $response->body;
-		}
+	protected function _api($method, $endpoint, $params=[]) {
+		$response = $this->_req($method, 
+			$this->api_endpoint($endpoint), 
+			$params);
+		return $this->after_api($response);
 	}
 
 	public function accessAction() {
-		// available iff post method
-		if($this->request->isPost()) {
-			$access = new Access;
-			$access->save($this->access_parse_info());
-			// 
+		// $access = new Access;
+		try {
+			$params = $this->request->getJsonRawBody(true);
+			$access_data = $this->access_parse_info($params);
+			// override initiali
+			$access_data['service'] = self::SERVICE_NAME;
+			$access_data['info'] = $params;
+
+			$access = Access::findFirst([
+				'service = ?0 AND uid = ?1 AND deleted_at IS NULL',
+				'bind' => [ self::SERVICE_NAME, $access_data['uid'] ]
+			]);
+
+			// var_dump($access);
+			if(!$access) $access = new Access;
+			$access->assign($access_data);
+
+			$access->save();
+
+			return json_encode($access->toArray(), JSON_FORCE_OBJECT | JSON_UNESCAPED_UNICODE);
+		} catch(\Exception $ex) {
+			$this->response->setStatusCode(500, 'Access not assigned');
+			$this->response->setContent(
+				"\n".$ex->getMessage().
+				"\n".$ex->getTraceAsString());
 			$this->response->send();
 		}
 	}
 
-	public function authAction($code=null) {
-		if($this->request->hasQuery('token')) {
-			die('fault action');
-		}
-		if($this->request->hasQuery('code')) {
-			$code = $this->request->get('code');
-			// send oauth access
-			$resp = $this->oauth_access_token($code);
-			// redirect to ok
-			var_dump($resp);
-			$this->response->setContent($resp->toString());
-		} else {
-			$redirect = $this->oauth_redirect_uri();
-			// redirect into login screen
-			$this->response->redirect($redirect);
-		}
-		// finally send
-		$this->response->send();
-	}
+	// protected function _oauthCodeParameterName() { return 'code' }
+	
 }

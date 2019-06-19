@@ -11,10 +11,10 @@ import pageKakao from '@/pages/kakao'
 Vue.use(VueRouter);
 const routes = [
 	{ path: '/', name: 'index', component: pageIndex },
-	{ path: '/facebook', name: 'facebook', component: pageFacebook },
-	{ path: '/google', name: 'google', component: pageGoogle },
-	{ path: '/naver', name: 'naver', component: pageNaver },
-	{ path: '/kakao', name: 'kakao', component: pageKakao },
+	// { path: '/facebook', name: 'facebook', component: pageFacebook },
+	// { path: '/google', name: 'google', component: pageGoogle },
+	// { path: '/naver', name: 'naver', component: pageNaver },
+	// { path: '/kakao', name: 'kakao', component: pageKakao },
 ];
 
 export default new VueRouter({

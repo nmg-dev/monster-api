@@ -1,10 +1,11 @@
 <template>
 	<service-card service_name="naver">
-		<template v-slot:jumbo>
-			<img src="../assets/jumbo_naver.png" />
+		<template v-slot:avatar>
+			<img src="../assets/logo_naver.png" />
 		</template>
 		<template v-slot:default>
-			&nbsp;
+			<img src="../assets/button_naver.png" @click="onClickBtn" />
+			<input type="hidden" id="naver-accessor" ref="naver-accessor" />
 		</template>
 	</service-card>
 </template>
@@ -12,17 +13,63 @@
 <script>
 import utils from '@/utils'
 import serviceCard from '@/components/serviceCard'
+
+// const CLIENT_ID = '_ryftJ90i2mhICMoAPAC';
+// const CLIENT_SDK = 'https://static.nid.naver.com/js/naveridlogin_js_sdk_2.0.0.js';
+
 export default {
 	name: 'naver',
 	components: {
 		serviceCard,
 	},
-	created() {
+	methods: {
+		onAuthSuccess(status) {
+		},
+		onAuthFailfure() {
+		},
+		onClickBtn(ev) {
+			if(!this.popup) {
+				// initialize access
+				this.access = null;
+				this.popup = window.open(
+					'/naver/auth', 
+					'naver_login', 
+					'width=600,height=800');
+				this.popupInterval = window.setInterval(() => {
+					// null out
+					let access = window.document.querySelector('#naver-accessor').value;
+					if(this.popup && !this.popup.closed)  {
+						this.popup.close();
+						this.popup = null;
+					}
+					if(access) {
+						this.access = access;
+						window.clearInterval(this.popupInterval);
 
+						utils.api.access('naver', JSON.parse(this.access));
+					} else {
+						window.console.log('waiting...');
+						return;
+					}
+				}, 100);
+			}
+
+			// window.console.log('sending events');
+			// window.console.log(this.sdk.loginStatus.getAccessTokenFromLocal());
+			// this.sdk.accessToken.subscribe((rs)=>{
+			// 	window.console.log(arguments);
+			// });
+		}
+	},
+	created() {
 	},
 	data: function() {
-		return {};
-	},
+		return {
+			popup: null,
+			popupInterval: null,
+			access: null,
+		};
+	}
 };
 </script>
 <style>

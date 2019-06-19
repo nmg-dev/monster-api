@@ -1,24 +1,26 @@
 <template>
 	<service-card service_name="facebook">
-		<template v-slot:jumbo>
-			<img src="../assets/jumbo_facebook.png" />
+		<template v-slot:avatar>
+			<img src="../assets/logo_facebook.png" />
 		</template>
 		<template v-slot:default>
 			<div 
 				class="fb-login-button" 
-				data-width="" 
+				data-width="180" 
 				data-size="large" 
 				data-button-type="login_with" 
 				data-auto-logout-link="false" 
 				data-use-continue-as="true"
-				data-scope="public_profile,ads_read,read_insights">
+				data-scope="public_profile,ads_read,read_insights,manage_pages">
 			</div>
 		</template>
+
 	</service-card>
 </template>
 
 <script>
 import utils from '@/utils'
+import axios from 'axios'
 import serviceCard from '@/components/serviceCard'
 
 const CLIENT_ID = '187554065327654';
@@ -30,26 +32,25 @@ export default {
 	components: {
 		serviceCard,
 	},
-	created() {
+	mounted() {
 		if(!window.FB) {
 			window.document.body.appendChild(utils.html('div', { id: 'fb-root'}));
-			let scr = utils.script(CLIENT_SDK);
-			scr.addEventListener('load', () => {
+			let scr = utils.script(CLIENT_SDK, () => {
 				window.FB.Event.subscribe('auth.statusChange', this.onLogin);
 			});
+			// window.document.body.appendChild(scr);
+		} else {
+			window.FB.XFBML.parse();
 		}
 	},
-	activate() {
-		window.console.log('facebook activate');
-		window.FB.XFBML.parse();
-	},
 	data: function() {
-		return { };
+		return { 
+		};
 	},
 	methods: {
 		onLogin(resp) { 
 			if(resp.status && resp.status === 'connected') {
-				window.console.log(resp.authResponse);
+				utils.api.access('facebook', resp.authResponse);
 			}
 		},
 	}
