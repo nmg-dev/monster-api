@@ -51,6 +51,8 @@ export default {
 						// return;
 					}
 				}, 100);
+			} else {
+				this.popup.window.location = '/naver/auth';
 			}
 		}
 	},

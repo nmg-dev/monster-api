@@ -67,10 +67,10 @@ export default {
 						utils.api.access('google', JSON.parse(this.access));
 					} else if(!this.popup || this.popup.closed) {
 						this.popup = null; window.clearInterval(this.popupInterval);
-						// window.console.log('waiting...');
-						// return;
 					}
 				}, 100);
+			} else {
+				this.popup.window.location = '/google/auth';
 			}
 		}
 	},

@@ -9,6 +9,7 @@
 				if(_value) {
 					clearInterval(_interval);
 					document.body.textContent = _value;
+					window.close();
 				} else if(_anchor) {
 					_anchor.value = `<?=$access ?>`;
 				}

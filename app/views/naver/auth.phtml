@@ -6,11 +6,10 @@
 			_anchor = opener.window.document.querySelector('#naver-accessor');
 			_interval = setInterval(function() {
 				let _value = _anchor.value;
-				// let v = opener.window.document.querySelector('#google-accessor').value;
 				if(_value) {
 					clearInterval(_interval);
 					document.body.textContent = _value;
-					// window.close();
+					window.close();
 				} else if(_anchor) {
 					_anchor.value = `<?=$access ?>`;
 				}
