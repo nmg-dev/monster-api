@@ -12,8 +12,8 @@ trait ApiAuthenticableServiceTrait {
 		return $href.$query;
 	}
 
-	protected function authRedirectUrl() { return ''; }
-	protected function authRetrieveToken($code) { return null; }
+	protected abstract function authRedirectUrl();
+	protected abstract function authRetrieveToken($code);
 
 	public function authAction() {
 		if($this->request->has('code')) {

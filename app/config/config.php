@@ -49,10 +49,11 @@ return new \Phalcon\Config([
             'app_access' => getenv('FACEBOOK_APP_ACCESS'),
         ],
         'google' => [
-            'api_host' => getenv('GOOGLE_API_HOST', ''),
+            'api_host' => getenv('GOOGLE_API_HOST', 'https://www.googleapis.com'),
             'client_id' => getenv('GOOGLE_CLIENT_ID'),
             'client_secret' => getenv('GOOGLE_CLIENT_SECRET'),
             'dev_token' => getenv('GOOGLE_DEV_TOKEN'),
+            'scopes' => getenv('GOOGLE_SCOPES'),
         ],
         'kakao' => [
             'api_host' => getenv('KAKAO_API_HOST'),

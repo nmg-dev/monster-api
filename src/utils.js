@@ -36,6 +36,5 @@ export default {
 				.then(_success)
 				.catch(_failure);
 		}
-	}
-
+	},
 }

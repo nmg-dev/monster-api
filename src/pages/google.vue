@@ -4,7 +4,8 @@
 			<img src="../assets/logo_google.png" />
 		</template>
 		<template v-slot:default>
-			<div id="g-signin2" @click="hadClick = true;" />
+			<img src="../assets/button_google.png" @click="onClickBtn" />
+			<input type="hidden" id="google-accessor" ref="google-accessor" />
 		</template>
 	</service-card>
 </template>
@@ -29,48 +30,78 @@ export default {
 	},
 	methods: {
 		onAuthSuccess(gauth) { 
-			if(this.hadClick) {
-				// window.console.log(gauth.getAuthResponse());
-				let me = gauth.currentUser.get();
-				let auth = me.getAuthResponse(true);
-				let prof = me.getBasicProfile();
-				utils.api.access('google', {
-					uid: prof.getId(),
-					access_token: auth.access_token,
-					refresh_token: auth.login_hint,
-					expires_at: auth.expires_at,
-				});
-			}
+			// if(this.hadClick) {
+			// 	// window.console.log(gauth.getAuthResponse());
+			// 	let me = gauth.currentUser.get();
+			// 	let auth = me.getAuthResponse(true);
+			// 	let prof = me.getBasicProfile();
+			// 	utils.api.access('google', {
+			// 		uid: prof.getId(),
+			// 		access_token: auth.access_token,
+			// 		refresh_token: auth.login_hint,
+			// 		expires_at: auth.expires_at,
+			// 	});
+			// }
 		},
 		onAuthFailure() { 
 			window.console.log('Failure', arguments);
 		},
+		onClickBtn() {
+			if(!this.popup) {
+				// initialize access
+				this.access = null;
+				this.popup = window.open(
+					'/google/auth', 
+					'authenticator', 
+					'width=400,height=600');
+				this.popupInterval = window.setInterval(() => {
+					// null out
+					let access = window.document.querySelector('#google-accessor').value;
+					if(access) {
+						if(this.popup && !this.popup.closed)  {
+							// this.popup.close(); 
+							this.popup = null;
+						}
+						this.access = access;
+						window.clearInterval(this.popupInterval);
+						utils.api.access('google', JSON.parse(this.access));
+					} else if(!this.popup || this.popup.closed) {
+						this.popup = null; window.clearInterval(this.popupInterval);
+						// window.console.log('waiting...');
+						// return;
+					}
+				}, 100);
+			}
+		}
 	},
 	created() {
-		if(!window.gapi) {
-			window.document.head.appendChild(utils.html('meta', {
-				name: 'google-signin-client_id',
-				content: CLIENT_ID
-			}));
+		// if(!window.gapi) {
+		// 	window.document.head.appendChild(utils.html('meta', {
+		// 		name: 'google-signin-client_id',
+		// 		content: CLIENT_ID
+		// 	}));
 			
-			let scr = utils.script(CLIENT_SDK, ()=> {
-				window.gapi.load('signin2', () => {
-					window.gapi.signin2.render('g-signin2', {
-						width: 240,
-						height: 45,
-						longtitle: true,
-						theme: 'light',
-						onsuccess: this.onAuthSuccess,
-						onfailrue: this.onAuthFailure,
-					});
-				});
-			});
-			// window.document.body.appendChild(scr);
-		}
+		// 	let scr = utils.script(CLIENT_SDK, ()=> {
+		// 		window.gapi.load('signin2', () => {
+		// 			window.gapi.signin2.render('g-signin2', {
+		// 				width: 240,
+		// 				height: 45,
+		// 				longtitle: true,
+		// 				theme: 'light',
+		// 				// onsuccess: this.onAuthSuccess,
+		// 				// onfailrue: this.onAuthFailure,
+		// 			});
+		// 		});
+		// 	});
+		// 	// window.document.body.appendChild(scr);
+		// }
 	},
 	data: function() {
 		return {
-			hadClick: false,
+			popup: null,
+			popupInterval: null,
+			access: null,
+			// hadClick: false,
 		};
 	},
 };

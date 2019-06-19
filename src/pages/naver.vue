@@ -33,32 +33,25 @@ export default {
 				this.access = null;
 				this.popup = window.open(
 					'/naver/auth', 
-					'naver_login', 
-					'width=600,height=800');
+					'authenticator', 
+					'width=400,height=600');
 				this.popupInterval = window.setInterval(() => {
 					// null out
 					let access = window.document.querySelector('#naver-accessor').value;
-					if(this.popup && !this.popup.closed)  {
-						this.popup.close();
-						this.popup = null;
-					}
 					if(access) {
+						if(this.popup && !this.popup.closed)  {
+							this.popup.close(); this.popup = null;
+						}
 						this.access = access;
 						window.clearInterval(this.popupInterval);
-
 						utils.api.access('naver', JSON.parse(this.access));
-					} else {
-						window.console.log('waiting...');
-						return;
+					} else if(!this.popup || this.popup.closed) {
+						this.popup = null; window.clearInterval(this.popupInterval);
+						// window.console.log('waiting...');
+						// return;
 					}
 				}, 100);
 			}
-
-			// window.console.log('sending events');
-			// window.console.log(this.sdk.loginStatus.getAccessTokenFromLocal());
-			// this.sdk.accessToken.subscribe((rs)=>{
-			// 	window.console.log(arguments);
-			// });
 		}
 	},
 	created() {

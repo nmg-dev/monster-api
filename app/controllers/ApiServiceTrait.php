@@ -9,9 +9,8 @@ trait ApiServiceTrait {
 	 * const API_HOST
 	 */
 
-	// protected $__token = null;
-
-	
+	protected $__token = null;
+	protected $__token_type = 'Bearer';
 
 	protected function setClientAuth($token, $token_type='Bearer') {
 		$this->__token = $token;
@@ -48,7 +47,6 @@ trait ApiServiceTrait {
 		if($this->__token)
 			$client->header->set('Authorization', 
 				sprintf('%s %s', $this->__token_type, $this->__token));
-		// $this->before_req($client, $params);
 		$client->setBaseUri($url);
 		return $client->$method($url, $params);
 	}
