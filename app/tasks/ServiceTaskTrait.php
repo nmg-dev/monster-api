@@ -13,22 +13,11 @@ use App\Models\Permission;
 
 trait ServiceTaskTrait  {
 	abstract static function service_name();
+	abstract protected function parse_api_response($resp, &$next, &$errors);
 
 	protected $_client;
 
-	protected static function BucketTx($arr, $fn, $bucketSize=100) {
-		$keys = array_keys($arr);
-		while(0<count($keys)) {
-			$_kys = array_splice($keys, 0, $bucketSize);
-			if(!$_kys || count($_kys)<=0) break;
-			$_vals = array_map(function($ky) use($arr) {
-				return $arr[$ky]; 
-			}, $_kys);
-			// run tx
-			$fn($_vals, $_kys);
-		}
-	}
-
+	// load service related configure
 	protected function _config($key=null, $defaultValue=null) {
 		$_path = 'services.'.self::service_name();
 		if($key)
@@ -36,25 +25,37 @@ trait ServiceTaskTrait  {
 		return $this->config->path($_path, $defaultValue);
 	}
 
-	protected function client() {
-		if(!$this->_client)
-			$this->_client = RequestClient::getProvider();
-		return $this->_client;
-	}
-
-	protected function retrieveAccounts() {
-		$accesses = $this->access_in_live();
-		self::BucketTx($accesses, function($accs))
-	}
-
-	protected function access_in_live() {
-		$query = Access::find([
-			'conditions' => 'service = ?0 AND 0<status AND deleted_at is NULL',
-			'bind' => [ self::service_name() ]
+	
+	protected function list_access($limits) {
+		return Access::find([
+			sprintf("service = '%s'", self::service_name()),
+			sprintf("0 < status"),
+			sprintf("deleted_at < 0"),
+			'order' => 'visited_at desc',
+			'limit' => $limits
 		]);
-		$rets = [];
-		foreach($query as $acc)
-			$rets[$acc->id] = $acc;
-		return $rets;
 	}
+
+	protected function search_permissions_by_access($access) {
+		return Permission::find([
+			sprintf("access_id = %d", $access->id),
+		]);
+	}
+
+	protected function search_accounts_by_ids($account_ids) {
+		$_accounts = Account::find([
+			sprintf("service = '%s'", self::service_name()),
+			sprintf("uid IN (%s)", implode(',', array_map(function($account_id) {
+				return "'$account_id'";
+			}, $account_ids)))
+		]);
+		return array_reduce($account_ids,
+			function($agg, $aid) use(&$_accounts) {
+				$agg[$aid] = array_key_exists($aid, $_accounts) ? $_accounts[$aid] : null;
+				return $agg;
+			}, 
+		[]);
+	}
+
+
 }

@@ -88,15 +88,22 @@ foreach ($argv as $k => $arg) {
 try {
     // Handle incoming arguments
     $console->handle($arguments);
+    exit(0);
 } catch (\Phalcon\Exception $e) {
     // Do Phalcon related stuff here
     // ..
+    // debug_print_backtrace();
     fwrite(STDERR, $e->getMessage() . PHP_EOL);
+    fwrite(STDERR, $e->getTraceAsString() . PHP_EOL);
     exit(1);
 } catch (\Throwable $throwable) {
+    // debug_print_backtrace();
     fwrite(STDERR, $throwable->getMessage() . PHP_EOL);
+    fwrite(STDERR, $throwable->getTraceAsString() . PHP_EOL);
     exit(1);
 } catch (\Exception $exception) {
+    // debug_print_backtrace();
     fwrite(STDERR, $exception->getMessage() . PHP_EOL);
+    fwrite(STDERR, $exception->getTraceAsString() . PHP_EOL);
     exit(1);
 }
