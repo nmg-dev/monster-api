@@ -77,6 +77,21 @@ class Access extends \Phalcon\Models\AbstractModel
      */
     public $deleted_at;
 
+    public static function NEW($service, $uid, $token, $rtoken=null, $info=null, $expires=null) {
+        $access = new Access();
+        $access->assign([
+            'service' => $service,
+            'uid' => $uid,
+            'access_token' => $token,
+            'refresh_token' => $rtoken,
+            'info' => $info,
+            'expires_at' => $expires,
+            'status' => 1
+        ]);
+        $access->save();
+        return $access;
+    }
+
     /**
      * Initialize method for model.
      */
@@ -86,8 +101,8 @@ class Access extends \Phalcon\Models\AbstractModel
         $this->setSource("access");
         // $this->hasMany('id', 'Model\Permissions', 'access_id', ['alias' => 'Permissions']);
         $this->hasManyToMany('id', 
-            'Models\Permission', 'access_id', 'account_id', 
-            'Models\Account', 'id', ['alias'=>'accounts']);
+            'App\Models\Permission', 'access_id', 'account_id', 
+            'App\Models\Account', 'id', ['alias'=>'accounts']);
     }
 
     public function beforeSave() {

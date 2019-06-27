@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-class Permission extends \Phalcon\Mvc\Model
+class Permission extends \Phalcon\Models\AbstractModel
 {
 
     /**
@@ -47,6 +47,30 @@ class Permission extends \Phalcon\Mvc\Model
      */
     public $updated_at;
 
+    public static function NEW($access_id, $account_id, $is_manager=null, $is_owner=null) {
+        $permission = new Permission();
+        echo $access_id.' '.$account_id."\n";
+        $permission->assign([
+            'access_id' => $access_id,
+            'account_id' => $account_id,
+            'can_manage' => $is_manager,
+            'has_own' => $is_owner,
+        ]);
+        $permission->save();
+
+        return $permission;
+    }
+
+    public static function DEL($access_id, $account_id) {
+        $permission = self::findFirst([
+            'access_id' => $access_id,
+            'account_id' => $account_id
+        ]);
+        if($permssion)
+            $permission->delete();
+        return $permission;
+    }
+
     /**
      * Initialize method for model.
      */
@@ -54,8 +78,8 @@ class Permission extends \Phalcon\Mvc\Model
     {
         $this->setSchema("monsters");
         $this->setSource("permissions");
-        $this->belongsTo('access_id', 'Model\Access', 'id', ['alias' => 'access']);
-        $this->belongsTo('account_id', 'Model\Account', 'id', ['alias' => 'account']);
+        $this->belongsTo('access_id', 'App\Models\Access', 'id', ['alias' => 'access']);
+        $this->belongsTo('account_id', 'App\Models\Account', 'id', ['alias' => 'account']);
     }
 
     /**

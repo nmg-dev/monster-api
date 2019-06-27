@@ -1,6 +1,7 @@
 <?php
 
-use Phalcon\Http\Client\Request as RequestClient;
+use Phalcon\Mvc\Model\Transaction\Failed as TxFailed;
+use Phalcon\Mvc\Model\Transaction\Manager as TxManager;
 
 use App\Models\Access;
 use App\Models\Account;
@@ -13,9 +14,10 @@ use App\Models\Permission;
 
 trait ServiceTaskTrait  {
 	abstract static function service_name();
-	abstract protected function parse_api_response($resp, &$next, &$errors);
+	
 
 	protected $_client;
+	protected $_tx_manager;
 
 	// load service related configure
 	protected function _config($key=null, $defaultValue=null) {
@@ -26,12 +28,12 @@ trait ServiceTaskTrait  {
 	}
 
 	
-	protected function list_access($limits) {
+	protected function list_access($limits=20) {
 		return Access::find([
 			sprintf("service = '%s'", self::service_name()),
 			sprintf("0 < status"),
 			sprintf("deleted_at < 0"),
-			'order' => 'visited_at desc',
+			'order' => 'updated_at desc',
 			'limit' => $limits
 		]);
 	}
@@ -49,13 +51,32 @@ trait ServiceTaskTrait  {
 				return "'$account_id'";
 			}, $account_ids)))
 		]);
-		return array_reduce($account_ids,
-			function($agg, $aid) use(&$_accounts) {
-				$agg[$aid] = array_key_exists($aid, $_accounts) ? $_accounts[$aid] : null;
-				return $agg;
-			}, 
-		[]);
+		$rets = [];
+		foreach($_accounts as $ac) {
+			$rets[$ac->uid] = $ac;
+		}
+		return $rets;
 	}
+
+	protected function _txBlock() {
+		if(!$this->_tx_manager)
+			$this->_tx_manager = new TxManager();
+		return $this->_tx_manager->get();
+	}
+
+	protected function _transaction($txFn) {
+		$tx = $this->_txBlock();
+		try {
+			$txFn($tx);
+			$tx->commit();
+		} catch(TxFailed $txErr) {
+			fwrite(STDERR, $txErr->getMessage() . PHP_EOL);
+    		fwrite(STDERR, $txErr->getTraceAsString() . PHP_EOL);
+			$tx->rollback();
+		}
+	}
+
+
 
 
 }

@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-class Account extends \Phalcon\Mvc\Model
+class Account extends \Phalcon\Models\AbstractModel
 {
     use \Phalcon\Models\SoftDeletes;
 
@@ -65,6 +65,18 @@ class Account extends \Phalcon\Mvc\Model
      * @var string
      */
     public $deleted_at;
+
+    public static function NEW($service, $uid) {
+        $account = new Account();
+        $account->assign([
+            'service' => $service,
+            'uid' => $uid,
+            'status'=>1,
+        ]);
+        $account->save();
+        // var_dump($account);
+        return $account;
+    }
 
     /**
      * Initialize method for model.
