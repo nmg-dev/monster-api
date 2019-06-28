@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-class Campaign extends \Phalcon\Mvc\Model
+class Campaign extends \Phalcon\Models\AbstractModel
 {
     use \Phalcon\Models\SoftDeletes;
     /**
@@ -34,18 +34,6 @@ class Campaign extends \Phalcon\Mvc\Model
      * @var string
      */
     public $profile;
-
-    /**
-     *
-     * @var string
-     */
-    public $period_from;
-
-    /**
-     *
-     * @var string
-     */
-    public $period_till;
 
     /**
      *

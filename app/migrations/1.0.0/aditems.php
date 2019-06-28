@@ -24,8 +24,8 @@ class AditemsMigration_100 extends ModelDefinition
                 $this->_double('spendings'),
                 $this->_text('stats'),
 
-                $this->_date('period_from'),
-                $this->_date('period_till'),
+                // $this->_date('period_from'),
+                // $this->_date('period_till'),
                 $this->_text('errors'),
                 $this->_integer('status', ['size'=>1, 'default'=>0]),
 
@@ -37,8 +37,8 @@ class AditemsMigration_100 extends ModelDefinition
         	'indexes' => [
                 $this->_index('id'),
                 $this->_index('service,uid', 'aditem_uniqueness', 'UNIQUE'),
-                $this->_index('period_from', 'aditem_period_from_index'),
-                $this->_index('period_till', 'aditem_period_till_index'),
+                // $this->_index('period_from', 'aditem_period_from_index'),
+                // $this->_index('period_till', 'aditem_period_till_index'),
         	],
         ]);
     }

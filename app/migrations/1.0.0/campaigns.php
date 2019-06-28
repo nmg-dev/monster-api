@@ -15,8 +15,8 @@ class CampaignsMigration_100 extends ModelDefinition
                 $this->_integer('account_id', ['unsigned'=>true, 'notNull'=>true]),
                 $this->_varchar('uid', ['size'=>400, 'notNull'=>true]),
                 $this->_text('profile'),
-                $this->_date('period_from'),
-                $this->_date('period_till'),
+                // $this->_date('period_from'),
+                // $this->_date('period_till'),
                 $this->_text('errors'),
                 $this->_integer('status', ['size'=>1, 'default'=>0]),
                 $this->_timestamp('visited_at'),
@@ -27,8 +27,8 @@ class CampaignsMigration_100 extends ModelDefinition
         	'indexes' => [
         		$this->_index('id'),
                 $this->_index('service,uid', 'campaign_uniqueness', 'UNIQUE'),
-                $this->_index('period_from', 'campaign_period_from_index'),
-                $this->_index('period_till', 'campaign_period_till_index'),
+                // $this->_index('period_from', 'campaign_period_from_index'),
+                // $this->_index('period_till', 'campaign_period_till_index'),
         	],
             
         ]);

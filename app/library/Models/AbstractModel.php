@@ -5,7 +5,7 @@ abstract class AbstractModel extends \Phalcon\Mvc\Model {
 	
 	protected function jsonite($column) {
 		if($this->$column) {
-			$this->$column = json_encode($this->$column, JSON_FORCE_OBJECT | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+			$this->$column = json_encode($this->$column, JSON_FORCE_OBJECT |  JSON_INVALID_UTF8_SUBSTITUTE);
 		}
 	}
 
@@ -47,6 +47,15 @@ abstract class AbstractModel extends \Phalcon\Mvc\Model {
 
 	protected function updated_timestamp($column='updated_at') {
 		$this->$column = date(self::TIMESTAMP_FORMAT);
+	}
+
+	protected function _listValues($property_name, $key='uid') {
+		$rets = [];
+		// echo $this->$property_name."\n";
+		foreach($this->$property_name as $k=>$v) {
+			$rets[$v->$key] = $v;
+		}
+		return $rets;
 	}
 	
 }

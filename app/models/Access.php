@@ -99,7 +99,7 @@ class Access extends \Phalcon\Models\AbstractModel
     {
         $this->setSchema("monsters");
         $this->setSource("access");
-        // $this->hasMany('id', 'Model\Permissions', 'access_id', ['alias' => 'Permissions']);
+        $this->hasMany('id', 'App\Models\Permission', 'access_id', ['alias' => 'permissions']);
         $this->hasManyToMany('id', 
             'App\Models\Permission', 'access_id', 'account_id', 
             'App\Models\Account', 'id', ['alias'=>'accounts']);
@@ -125,5 +125,9 @@ class Access extends \Phalcon\Models\AbstractModel
     public function getSource()
     {
         return 'access';
+    }
+
+    public function listAccounts() {
+        return $this->_listValues('accounts');
     }
 }

@@ -66,14 +66,15 @@ class Account extends \Phalcon\Models\AbstractModel
      */
     public $deleted_at;
 
-    public static function NEW($service, $uid) {
+    public static function NEW($service, $uid, $profile=null, $status=1) {
         $account = new Account();
         $account->assign([
             'service' => $service,
             'uid' => $uid,
-            'status'=>1,
+            'profile' => $profile,
+            'status'=>$status,
         ]);
-        $account->save();
+        // $account->save();
         // var_dump($account);
         return $account;
     }
@@ -85,14 +86,14 @@ class Account extends \Phalcon\Models\AbstractModel
     {
         $this->setSchema("monsters");
         $this->setSource("accounts");
-        $this->hasMany('id', 'Models\Adgroup', 'account_id', ['alias' => 'groups']);
-        $this->hasMany('id', 'Models\Aditem', 'account_id', ['alias' => 'items']);
-        $this->hasMany('id', 'Models\Campaign', 'account_id', ['alias' => 'campaigns']);
-        // $this->hasMany('id', 'Model\Permissions', 'account_id', ['alias' => 'Permissions']);
+        $this->hasMany('id', 'App\Models\Adgroup', 'account_id', ['alias' => 'groups']);
+        $this->hasMany('id', 'App\Models\Aditem', 'account_id', ['alias' => 'items']);
+        $this->hasMany('id', 'App\Models\Campaign', 'account_id', ['alias' => 'campaigns']);
+        $this->hasMany('id', 'App\Models\Permission', 'account_id', ['alias' => 'permissions']);
 
         $this->hasManyToMany('id', 
-            'Model\Permissions', 'account_id', 'access_id', 
-            'Model\Access', 'id', ['alias'=>'accesses']);
+            'App\Models\Permission', 'account_id', 'access_id', 
+            'App\Models\Access', 'id', ['alias'=>'accesses']);
     }
 
     public function beforeSave() {
@@ -121,4 +122,54 @@ class Account extends \Phalcon\Models\AbstractModel
         return 'accounts';
     }
 
+    public function theMostAccess() {
+        $most = null;
+        foreach($this->permissions as $p) {
+            // skip unavailables
+            $acc = $p->access;
+            if($acc->status<=0 || $acc->deleted_at || $acc->errors) continue;
+            if(!$most)
+                $most = $p;
+            else if(!$most->has_own && $p->has_own)
+                return $acc;
+            else if(!$most->can_manage && $p->can_manage)
+                $most = $p;
+        }
+        return $most->access;
+    }
+
+    public function listCampaigns() {
+        $query = Campaign::find([
+            sprintf("service = '%s'", $this->service),
+            sprintf("account_id = %d", $this->id)
+        ]);
+        $rets = [];
+        foreach($query as $cmp)
+            $rets[$cmp->uid] = $cmp;
+        
+        return $rets;
+    }
+
+    public function listGroups() {
+        $query = Adgroup::find([
+            sprintf("service = '%s'", $this->service),
+            sprintf("account_id = %d", $this->id),
+        ]);
+        $rets = [];
+        foreach($query as $grp)
+            $rets[$grp->uid] = $grp;
+        
+        return $rets;
+    }
+
+    public function listItems() {
+        $query = Aditem::find([
+            sprintf("service = '%s'", $this->service),
+            sprintf("account_id = %d", $this->id),
+        ]);
+        $rets = [];
+        foreach($query as $item)
+            $rets[$item->uid] = $item;
+        return $rets;
+    }
 }

@@ -2,8 +2,17 @@
 
 namespace App\Models;
 
-class Adrecord extends \Phalcon\Mvc\Model
+class Adrecord extends \Phalcon\Models\AbstractModel
 {
+    use \Phalcon\Models\Queriable;
+    public static $FIELDS_TO_PUT = [
+        'impressions',
+        'clicks',
+        'conversions',
+        'spendings',
+        'stats',
+        'errors',
+    ];
 
     /**
      *
@@ -89,14 +98,16 @@ class Adrecord extends \Phalcon\Mvc\Model
     public function beforeSave() {
         $this->created_timestamp();
         $this->updated_timestamp();
+        $this->day_id = date('Y-m-d', strtotime($this->day_id));
         $this->jsonite('stats');
         $this->jsonite('errors');
+
     }
 
     public function afterFetch() {
         $this->jsonparse('stats');
         $this->jsonparse('errors');
-        $this->timestamps();
+        $this->day_id = date('Y-m-d', strtotime($this->day_id));
     }
 
 
@@ -120,6 +131,21 @@ class Adrecord extends \Phalcon\Mvc\Model
     public static function findFirst($parameters = null)
     {
         return parent::findFirst($parameters);
+    }
+
+    public static function GET($item_id, $day_id) {
+        $rec = parent::findFirst([
+            sprintf("item_id = %d", intval($item_id)),
+            sprintf("day_id = DATE('%s')", $day_id),
+        ]);
+        if(!$rec) {
+            $rec = new Adrecord();
+            $rec->assign([
+                'item_id' => $item_id,
+                'day_id' => $day_id,
+            ]);
+        }
+        return $rec;
     }
 
 }

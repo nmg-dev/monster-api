@@ -56,7 +56,7 @@ class Permission extends \Phalcon\Models\AbstractModel
             'can_manage' => $is_manager,
             'has_own' => $is_owner,
         ]);
-        $permission->save();
+        // $permission->save();
 
         return $permission;
     }

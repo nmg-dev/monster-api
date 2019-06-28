@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-class Aditem extends \Phalcon\Mvc\Model
+class Aditem extends \Phalcon\Models\AbstractModel
 {
     use \Phalcon\Models\SoftDeletes;
 

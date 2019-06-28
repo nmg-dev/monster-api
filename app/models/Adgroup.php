@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-class Adgroup extends \Phalcon\Mvc\Model
+class Adgroup extends \Phalcon\Models\AbstractModel
 {
     use \Phalcon\Models\SoftDeletes;
     /**
@@ -104,7 +104,7 @@ class Adgroup extends \Phalcon\Mvc\Model
     public function beforeSave() {
         $this->created_timestamp();
         $this->updated_timestamp();
-        $this->timestrings(['visited_at', 'deleted_at']);
+        $this->timestrings(['visited_at', 'deleted_at', 'period_from', 'period_till']);
         
         $this->jsonite('profile');
         $this->jsonite('errors');
@@ -113,7 +113,7 @@ class Adgroup extends \Phalcon\Mvc\Model
     public function afterFetch() {
         $this->jsonparse('profile');
         $this->jsonparse('errors');
-        $this->timestamps(['visited_at', 'created_at','updated_at', 'deleted_at']);
+        $this->timestamps(['visited_at', 'created_at','updated_at', 'deleted_at', 'period_from', 'period_till']);
     }
 
     /**
