@@ -139,6 +139,7 @@ class Account extends \Phalcon\Models\AbstractModel
     }
 
     public function listCampaigns() {
+        printf("account_id = %d\n", $this->id);
         $query = Campaign::find([
             sprintf("service = '%s'", $this->service),
             sprintf("account_id = %d", $this->id)

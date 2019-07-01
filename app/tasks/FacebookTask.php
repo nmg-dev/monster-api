@@ -40,47 +40,52 @@ class FacebookTask extends \Phalcon\Cli\Task
 	}
 
 	// @override('ServiceApiTrait')
-	function request_api_accounts() {
-		return $this->_request('get', 'me/adaccounts', $this->_access, [
+	function request_api_accounts($nextpage=null) {
+		$params = [
 			'access_token'=>$this->_access->access_token,
 			'fields' => 'id,name,account_id,account_status,business,currency,amount_spent,owner,balance,timezone_name',
-		]);
+		];
+		if($nextpage)
+			$params[self::API_KEY_PAGE_CURSOR_NEXT] = $nextpage;
+		return $this->_request('get', 'me/adaccounts', $this->_access, $params);
 	}
 
-	function _request_apis($suffix, $fields, $params) {
+	function _request_apis($suffix, $fields, $params, $nextpage=null) {
 		if($this->_access && $this->_account) {
 			$endpoint = sprintf('act_%s/%s', $this->_account->uid, $suffix);
 			$parameters = $params + [
 				'access_token' => $this->_access->access_token,
 				'fields' => implode(',', $fields)
 			];
+			if($nextpage)
+				$parameters[self::API_KEY_PAGE_CURSOR_NEXT] = $nextpage;
 			return $this->_request('get', $endpoint, $this->_access, $parameters);
 		}
 		return null;
 	}
 
-	function request_api_campaigns() {
+	function request_api_campaigns($nextpage=null) {
 		return $this->_request_apis('campaigns', 
 			['id','name','effective_status','objective','spend_cap','daily_budget'],
-			['date_preset'=>'last_7d']);
+			['date_preset'=>'last_7d'], $nextpage);
 	}
 
-	function request_api_groups() {
+	function request_api_groups($nextpage=null) {
 		return $this->_request_apis('adsets',
 			['id','name','status','start_time','end_time','lifetime_budget','daily_budget','lifetime_spend_cap','bid_amount','bid_strategy','targeting', 'account_id', 'campaign_id'],
-			['date_preset'=>'last_7d']);
+			['date_preset'=>'last_7d'], $nextpage);
 	}
 
-	function request_api_items() {
+	function request_api_items($nextpage=null) {
 		return $this->_request_apis('ads',
 			['id','name','bid_amount','creative{id,name,body,object_url,link_url,object_type,status,thumbnail_url}','status', 'account_id', 'campaign_id', 'adset_id'],
-			['date_preset'=>'last_7d']);
+			['date_preset'=>'last_7d'], $nextpage);
 	}
 
-	function request_api_insights() {
+	function request_api_insights($nextpage=null) {
 		return $this->_request_apis('insights',
 			['ad_id','impressions','reach','clicks','unique_clicks','actions','unique_actions','conversions','spend','relevance_score'],
-			['date_presets'=>'last_7d', 'level'=>'ad', 'time_increment'=>1, ]
+			['date_preset'=>'last_7d', 'level'=>'ad', 'time_increment'=>1], $nextpage
 		);
 	}
 
@@ -90,7 +95,7 @@ class FacebookTask extends \Phalcon\Cli\Task
 	// @override('ServiceApiTrait')
 	function retrieve_api_accounts($data) {
 		$rets = [];
-		foreach($data as $adata) {
+		foreach($data as $idx=>$adata) {
 			$uid = $adata['account_id'];
 			$rets[$uid] = [
 				'uid' => $uid,
@@ -105,7 +110,7 @@ class FacebookTask extends \Phalcon\Cli\Task
 	function retrieve_api_campaigns($data) {
 		$rets = [];
 		$account = $this->_account;
-		foreach($data as $cmp) {
+		foreach($data as $idx=>$cmp) {
 			$uid = $cmp['id'];
 			$rets[$uid] = [
 				'uid' => $uid,
@@ -126,12 +131,12 @@ class FacebookTask extends \Phalcon\Cli\Task
 	function retrieve_api_groups($data) {
 		$rets = [];
 		$account = $this->_account;
-		foreach($data as $grp) {
+		foreach($data as $idx=>$grp) {
 			$uid = $grp['id'];
 			$rets[$uid] = [
 				'uid' => $uid,
 				'account_id' => $account->id,
-				'campaign_id' => intval($grp['campaign_id']),
+				'campaign_id' => intval($this->_campaigns[$grp['campaign_id']]->id),
 				'period_from' => strtotime($grp['start_time']),
 				'period_till' => strtotime($grp['end_time']),
 				'profile' => [
@@ -149,13 +154,13 @@ class FacebookTask extends \Phalcon\Cli\Task
 	function retrieve_api_items($data) {
 		$rets = [];
 		$account = $this->_account;
-		foreach($data as $item) {
+		foreach($data as $idx=>$item) {
 			$uid = $item['id'];
 			$rets[$uid] = [
 				'uid' => $uid,
 				'account_id' => $account->id,
-				'campaign_id' => intval($item['campaign_id']),
-				'group_id' => intval($item['adset_id']),
+				'campaign_id' => intval($this->_campaigns[$item['campaign_id']]->id),
+				'group_id' => intval($this->_adgroups[$item['adset_id']]->id),
 				'profile' => [
 					'name' => $this->_avalue('name', $item),
 					'bid_amount' => $this->_avalue('bid_amount', $item),
@@ -187,9 +192,11 @@ class FacebookTask extends \Phalcon\Cli\Task
 			$cost = intval($rec['spend']);
 			$conversions = array_reduce($rec['conversions'], $summation, 0);
 
-			array_push($rets, [
+			if(!array_key_exists($aditem->id, $rets))
+				$rets[$aditem->id] = [];
+
+			$rets[$aditem->id][$rec['date_start']] = [
 				'item_id' => $aditem->id,
-				'day_id' => $rec['date_start'],
 				'impressions' => $impressions,
 				'clicks' => $clicks,
 				'conversions' => $conversions,
@@ -207,7 +214,7 @@ class FacebookTask extends \Phalcon\Cli\Task
 					'relevance_score' => floatval($rec['relevance_score']),
 				],
 				'errors' => null,
-			]);
+			];
 		}
 		return $rets;
 	}

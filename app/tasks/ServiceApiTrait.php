@@ -20,26 +20,25 @@ trait ServiceApiTrait {
 
 
 	// accounts & permissions from access
-	abstract function request_api_accounts();
+	abstract function request_api_accounts($nextpage=null);
 	abstract function retrieve_api_accounts($data);
 
 	// campaign, adgroup, ads from account
-	abstract function request_api_campaigns();
+	abstract function request_api_campaigns($nextpage=null);
 	abstract function retrieve_api_campaigns($data);
 
-	abstract function request_api_groups();
+	abstract function request_api_groups($nextpage=null);
 	abstract function retrieve_api_groups($data);
 
-	abstract function request_api_items();
-	abstract function retrieve_api_items();
+	abstract function request_api_items($nextpage=null);
+	abstract function retrieve_api_items($data);
 
 	// ad insigts
-	abstract function request_api_insights($access);
+	abstract function request_api_insights($nextpage=null);
 	abstract function retrieve_api_insights($data);
 	
 	protected function api_url($path) {
 		$url = $this->_config('api_host').'/'.$path;
-		echo "\n".$url."\n";
 		return $url;
 	}
 
@@ -55,6 +54,7 @@ trait ServiceApiTrait {
 		if($access && $access->access_token)
 			$client->header->set('Authorization', 'Bearer '.$access->access_token);
 		$url = $this->api_url($path);
+
 		$resp = $client->$method($url, $params);
 		
 		return $resp;
@@ -68,8 +68,11 @@ trait ServiceApiTrait {
 		$errors = null;
 		do {
 
-			$params = $next_page ? ['after' => $next_page] : null;
-			$resp = $this->$req_func_name();
+			// send api request
+			$resp = $this->$req_func_name($next_page);
+			// initiate latest next cursor after use
+			$next_page = null;
+			// parse request to data
 			$data = $this->parse_api_response($resp, $next_page, $errors);
 			// on error break
 			if($errors) {
@@ -85,13 +88,6 @@ trait ServiceApiTrait {
 
 			// merge account id list
 			$rets += $this->$retrieve_func_name($data);
-			// rest a little to prevent token error
-			if($next_page && $next_page != $latest_cursor) {
-				sleep(1);
-				$latest_cursor = $next_page;
-			} else  {
-				break;
-			}
 		} while($next_page!=null);
 		return $rets;
 	}
@@ -140,33 +136,36 @@ trait ServiceApiTrait {
 			$this->_access = $account->theMostAccess();
 
 			// process campaigns
+			$campaingns = null; $cdata=null;
 			$cdata = $this->_requests('request_api_campaigns','retrieve_api_campaigns');
 			$campaigns = $account->listCampaigns();
-
+			if(count($cdata)<=0) continue;
 			$this->update_campaigns($campaigns, $cdata);
 			$this->_campaigns = $campaigns;
 
 			// next to adgroups
+			$adgroups = null; $gdata = null;
 			$gdata = $this->_requests('request_api_groups','retrieve_api_groups');
+			if(count($gdata)<=0) continue;
 			$adgroups = $account->listGroups();
 
 			$this->update_adgroups($adgroups, $gdata);
 			$this->_adgroups = $adgroups;
 
 			// ad items
+			$adata = null; $items = null;
 			$adata = $this->_requests('request_api_items','retrieve_api_items');
+			if(count($adata)<=0) continue;
 			$items = $account->listItems();
 			$this->update_aditems($items, $adata);
 			$this->_aditems = $items;
 
 			// records, finally
+			$rdata = null;
+			$records = $this->list_adrecords();
 			$rdata = $this->_requests('request_api_insights','retrieve_api_insights');
-			$this->update_adrecords($rdata);
-
-			printf("[%s] %s SAVINGS : \n", $account->service, $account->uid);
-			printf("Campaigns (%d) - %s\n", count($campaigns), implode("\n", array_keys($campaigns)));
-			printf("Adgroups (%d) - %s\n", count($adgroups), implode("\n", array_keys($adgroups)));
-			printf("Records (%d)\n\n", count($rdata));
+			if(count($rdata)<=0) continue;
+			$this->update_adrecords($records, $rdata);
 		}
 	}
 }
