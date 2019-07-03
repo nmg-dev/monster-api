@@ -19,6 +19,10 @@ class GoogleController extends ControllerBase
     	// return in_array($uinfo['hd'], ['nextmediagroup', 'fsn.com', 'cauly.com']);
     }
 
+    protected function after_api(&$response) {
+        return json_decode($response->body, true);
+    }
+
     protected function access_parse_info($params) {
     	$expires = time() + intval($params['expires_in']);
     	$this->setClientAuth($params['access_token']);

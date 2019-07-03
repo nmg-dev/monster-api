@@ -11,7 +11,7 @@
 				data-button-type="login_with" 
 				data-auto-logout-link="false" 
 				data-use-continue-as="true"
-				data-scope="public_profile,ads_read,read_insights,manage_pages">
+				data-scope="public_profile,ads_read,read_insights,manage_pages,business_management">
 			</div>
 		</template>
 

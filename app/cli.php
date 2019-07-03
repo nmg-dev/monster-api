@@ -4,6 +4,9 @@ use Phalcon\Di\FactoryDefault\Cli as CliDI;
 use Phalcon\Cli\Console as ConsoleApp;
 use Phalcon\Loader;
 
+// composer autoload
+require dirname(__DIR__).'/vendor/autoload.php';
+
 // Using the CLI factory default services container
 $di = new CliDI();
 

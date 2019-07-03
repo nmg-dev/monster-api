@@ -56,7 +56,7 @@ return new \Phalcon\Config([
             'scopes' => getenv('GOOGLE_SCOPES'),
         ],
         'kakao' => [
-            'api_host' => getenv('KAKAO_API_HOST'),
+            'api_host' => getenv('KAKAO_API_HOST', 'https://kapi.kakao.com/v1/moment'),
             'client_id' => getenv('KAKAO_CLIENT_ID'),
             'client_secret' => getenv('KAKAO_CLIENT_SECRET'),
         ],

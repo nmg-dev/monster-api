@@ -135,7 +135,7 @@ class Account extends \Phalcon\Models\AbstractModel
             else if(!$most->can_manage && $p->can_manage)
                 $most = $p;
         }
-        return $most->access;
+        return $most ? $most->access : null;
     }
 
     public function listCampaigns() {

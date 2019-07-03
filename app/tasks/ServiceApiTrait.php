@@ -56,6 +56,8 @@ trait ServiceApiTrait {
 		$url = $this->api_url($path);
 
 		$resp = $client->$method($url, $params);
+
+		echo $resp->body.PHP_EOL;
 		
 		return $resp;
 	}
@@ -78,11 +80,13 @@ trait ServiceApiTrait {
 			if($errors) {
 				$this->_access->errors = $errors;
 				$this->_access->status = -1;
+				$this->_access->save();
 				break;
 			} 
 			// no data break
 			else if(!$data) {
 				$this->_access->status = -2;
+				$this->_access->save();
 				break;
 			}
 
@@ -130,10 +134,22 @@ trait ServiceApiTrait {
 	}
 
 	public function insightAction($limits=20) {
-		foreach($this->list_accounts($limits) as $account) {
+		// flag visited_at here
+		$accounts = $this->list_accounts($limits);
+		$now = time();
+		$this->_transaction(function($tx) use($accounts, $now) {
+			foreach($accounts as $acc) {
+				$acc->visited_at = $now;
+			}
+			$acc->save();
+		});
+
+		// run accounts
+		foreach($accounts as $account) {
 			// initiate status
 			$this->_account = $account;
 			$this->_access = $account->theMostAccess();
+			if(!$this->_access) continue;
 
 			// process campaigns
 			$campaingns = null; $cdata=null;

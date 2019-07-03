@@ -24,7 +24,7 @@ export default {
 	methods: {
 		onAuthSuccess(auth) { 
 			utils.api.access('kakao', auth);
-			// window.console.log('success', auth); 
+			window.console.log('success', auth); 
 		},
 		onAuthFailure(err) { window.console.log('failure', err); }
 	},

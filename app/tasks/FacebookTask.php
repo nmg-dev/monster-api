@@ -39,17 +39,6 @@ class FacebookTask extends \Phalcon\Cli\Task
 		}
 	}
 
-	// @override('ServiceApiTrait')
-	function request_api_accounts($nextpage=null) {
-		$params = [
-			'access_token'=>$this->_access->access_token,
-			'fields' => 'id,name,account_id,account_status,business,currency,amount_spent,owner,balance,timezone_name',
-		];
-		if($nextpage)
-			$params[self::API_KEY_PAGE_CURSOR_NEXT] = $nextpage;
-		return $this->_request('get', 'me/adaccounts', $this->_access, $params);
-	}
-
 	function _request_apis($suffix, $fields, $params, $nextpage=null) {
 		if($this->_access && $this->_account) {
 			$endpoint = sprintf('act_%s/%s', $this->_account->uid, $suffix);
@@ -63,6 +52,18 @@ class FacebookTask extends \Phalcon\Cli\Task
 		}
 		return null;
 	}
+	
+	// @override('ServiceApiTrait')
+	function request_api_accounts($nextpage=null) {
+		$params = [
+			'access_token'=>$this->_access->access_token,
+			'fields' => 'id,name,account_id,account_status,business,currency,amount_spent,owner,balance,timezone_name',
+		];
+		if($nextpage)
+			$params[self::API_KEY_PAGE_CURSOR_NEXT] = $nextpage;
+		return $this->_request('get', 'me/adaccounts', $this->_access, $params);
+	}
+
 
 	function request_api_campaigns($nextpage=null) {
 		return $this->_request_apis('campaigns', 
@@ -146,6 +147,7 @@ class FacebookTask extends \Phalcon\Cli\Task
 					'targeting' => $this->_avalue('targeting', $grp),
 				],
 				'status' => $grp['status'] == 'ACTIVE' ? 1 : 0,
+				'deleted_at' => null,
 			];
 		}
 		return $rets;
@@ -192,11 +194,9 @@ class FacebookTask extends \Phalcon\Cli\Task
 			$cost = intval($rec['spend']);
 			$conversions = array_reduce($rec['conversions'], $summation, 0);
 
-			if(!array_key_exists($aditem->id, $rets))
-				$rets[$aditem->id] = [];
-
-			$rets[$aditem->id][$rec['date_start']] = [
+			array_push($rets, [
 				'item_id' => $aditem->id,
+				'day_id' => $rec['date_start'],
 				'impressions' => $impressions,
 				'clicks' => $clicks,
 				'conversions' => $conversions,
@@ -214,7 +214,7 @@ class FacebookTask extends \Phalcon\Cli\Task
 					'relevance_score' => floatval($rec['relevance_score']),
 				],
 				'errors' => null,
-			];
+			]);
 		}
 		return $rets;
 	}

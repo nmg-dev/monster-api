@@ -1,0 +1,8 @@
+{
+    "require": {
+        "google/gax": "^1.0",
+        "ulrichsg/getopt-php": "^3.2",
+        "monolog/monolog": "^1.24",
+        "googleads/google-ads-php": "^2.0"
+    }
+}

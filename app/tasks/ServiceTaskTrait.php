@@ -207,32 +207,32 @@ trait ServiceTaskTrait  {
 	}
 	protected function update_adrecords(&$records, $rdata, $flush_threshold=200) {
 		$stacks = [];
-		foreach($rdata as $item_id=>$recs) {
-			foreach($recs as $day_id=>$data) {
-				// find
-				if(array_key_exists($item_id, $records)
-				&& array_key_exists($day_id, $records[$item_id])
-				&& $records[$item_id][$day_id]) {
-					$record = $records[$item_id][$day_id];
-				} else {
-					$record = new Adrecord();
-					$record->assign([
-						'item_id'=> intval($item_id), 
-						'day_id' => $day_id,
-					]);
-				}
+		foreach($rdata as $idx=>$recs) {
+			$item_id = $recs['item_id'];
+			$day_id = $recs['day_id'];
+			// find
+			if(array_key_exists($item_id, $records)
+			&& array_key_exists($day_id, $records[$item_id])
+			&& $records[$item_id][$day_id]) {
+				$record = $records[$item_id][$day_id];
+			} else {
+				$record = new Adrecord();
 				$record->assign([
-					'impressions' => $this->_avalue('impressions', $data),
-					'clicks' => $this->_avalue('clicks', $data),
-					'conversions' => $this->_avalue('conversions', $data),
-					'spendings' => $this->_avalue('spendings', $data),
-					'stats' => $this->_avalue('stats', $data),
-					'errors' => null,
+					'item_id'=> intval($item_id), 
+					'day_id' => $day_id,
 				]);
-				array_push($stacks, $record);
 			}
+			$record->assign([
+				'impressions' => $this->_avalue('impressions', $data),
+				'clicks' => $this->_avalue('clicks', $data),
+				'conversions' => $this->_avalue('conversions', $data),
+				'spendings' => $this->_avalue('spendings', $data),
+				'stats' => $this->_avalue('stats', $data),
+				'errors' => null,
+			]);
+			array_push($stacks, $record);
 
-			if($flush_threshold < count($stacks))
+			if((1+$idx) % $flush_threshold == 0)
 				$this->update_adrecords_flush($stacks);
 		}
 		$this->update_adrecords_flush($stacks);
