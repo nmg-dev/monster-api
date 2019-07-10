@@ -97,15 +97,17 @@ trait ApiServiceTrait {
 
 	protected function buildQueryParams() {
 		$params = $this->request->getJsonRawBody(true);
-		if(array_key_exists('service', $params))
-			unset($params['service']);
 		$options = [ sprintf('service = ?0')];
-		$binds = [ self::SERVICE_NAME ];
-		foreach($params as $k=>$v) {
-			array_push($options, sprintf('%s = ?%d', $k, count($binds)));
-			array_push($binds, $v);
+		if($params && !empty($params)) {
+			if(array_key_exists('service', $params))
+				unset($params['service']);
+			$binds = [ self::SERVICE_NAME ];
+			foreach($params as $k=>$v) {
+				array_push($options, sprintf('%s = ?%d', $k, count($binds)));
+				array_push($binds, $v);
+			}
+			$options['bind'] = $binds;
 		}
-		$options['bind'] = $binds;
 		return $options;
 	}
 
@@ -132,17 +134,17 @@ trait ApiServiceTrait {
 			if(!empty($entity['ads'])) {
 				$item_ids = array_keys($entity['ads']);
 				$query = Adrecord::find([
-					sprintf('item_id in (%s) AND SUBDATE(NOW(), 3) <= day_id',
-						implode(',', $item_ids)),
+					sprintf('item_id in (%s) AND FROM_UNIXTIME(%d) <= day_id',
+						implode(',', $item_ids), strtotime('-15 days')),
 					'order' => 'item_id, day_id'
 				]);
 				foreach($query as $rec) {
 					$item_id = strval($rec->item_id);
 					$day_id = strval($rec->day_id);
-					$insights = $rec->toArray();
-					$entity['ads'][$item_id] = array_merge(
-						$entity['ads'][$item_id], $insights);
-					// $entity['ads'][$item_id]['insight'] = $insights;
+					if(!array_key_exists('insight', $entity['ads'][$item_id]))
+						$entity['ads'][$item_id]['insight'] = [];
+					array_push($entity['ads'][$item_id]['insight'],
+						$rec->toArray());
 				}
 
 			}
