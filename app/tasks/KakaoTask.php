@@ -4,7 +4,7 @@ class KakaoTask extends \Phalcon\Cli\Task
 {
 	use ServiceApiTrait;
 
-	protected static service_name() { return 'kakao'; }
+	protected static function service_name() { return 'kakao'; }
 
 	static $CONVERSION_KEY_ORDERED = [
 		// purchase (direct)
@@ -82,9 +82,9 @@ class KakaoTask extends \Phalcon\Cli\Task
 				$adata = $this->_request('get', 'creative', $this->_account, [
 					'creativeId' => $ad['id']
 				]);
-				$adata['account_id'] => $group->account_id;
-				$adata['campaign_id'] => $group->campaign_id;
-				$adata['group_id'] => $group->id;
+				$adata['account_id'] = $group->account_id;
+				$adata['campaign_id'] = $group->campaign_id;
+				$adata['group_id'] = $group->id;
 				$ads[$idx] = array_merge($ad, $adata);
 			}
 		}
@@ -161,7 +161,7 @@ class KakaoTask extends \Phalcon\Cli\Task
 				'campaign_id' => $d['campaign_id'],
 				'profile' => [
 					'name' => $d['name'],
-					'pricing'=> '$d[pricingType'],
+					'pricing'=> $d['pricingType'],
 					'pacing' => $d['pacing'],
 					'bid_type' => $d['bidStrategy'],
 					'budget_daily' => $d['dailyBudgetAmount'],
@@ -206,7 +206,7 @@ class KakaoTask extends \Phalcon\Cli\Task
 				'stats' => $m,
 
 			];
-		})
+		});
 		return $data;
 	}
 

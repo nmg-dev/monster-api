@@ -89,4 +89,8 @@ class GoogleTask extends \Phalcon\Cli\Task
 		}
 	}
 
+	public function insightAction($limits=10) {
+		
+	}
+
 }

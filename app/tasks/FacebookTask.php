@@ -24,8 +24,8 @@ class FacebookTask extends \Phalcon\Cli\Task
 	function parse_api_response($resp, &$next=null, &$errors=null) {
 		$content = json_decode($resp->body, true);
 		if(array_key_exists(self::API_KEY_ERROR, $content)) {
-			if($errors)
-				$errors = $content[self::API_KEY_ERROR];
+			// if($errors!=null)
+			$errors = $content[self::API_KEY_ERROR];
 			return null;
 		}
 		if(array_key_exists(self::API_KEY_PAGE, $content)
@@ -57,7 +57,7 @@ class FacebookTask extends \Phalcon\Cli\Task
 	function request_api_accounts($nextpage=null) {
 		$params = [
 			'access_token'=>$this->_access->access_token,
-			'fields' => 'id,name,account_id,account_status,business,currency,amount_spent,owner,balance,timezone_name',
+			'fields' => 'id,name,account_id,account_status,currency,amount_spent,owner,balance,timezone_name',
 		];
 		if($nextpage)
 			$params[self::API_KEY_PAGE_CURSOR_NEXT] = $nextpage;

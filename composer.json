@@ -4,5 +4,8 @@
         "ulrichsg/getopt-php": "^3.2",
         "monolog/monolog": "^1.24",
         "googleads/google-ads-php": "^2.0"
+    },
+    "require-dev": {
+        "phalcon/devtools": "^3.4"
     }
 }

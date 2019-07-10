@@ -110,10 +110,12 @@ class Access extends \Phalcon\Models\AbstractModel
         $this->updated_timestamp();
         $this->timestrings(['expires_at', 'deleted_at']);
         $this->jsonite('info');
+        $this->jsonite('errors');
     }
 
     public function afterFetch() {
         $this->jsonparse('info');
+        $this->jsonparse('errors');
         $this->timestamps(['expires_at', 'created_at','updated_at', 'deleted_at']);
     }
 

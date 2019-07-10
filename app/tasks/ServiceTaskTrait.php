@@ -44,10 +44,8 @@ trait ServiceTaskTrait  {
 	// list login access (SELECT)
 	protected function list_access($limits=20) {
 		return Access::find([
-			sprintf("service = '%s'", self::service_name()),
-			sprintf("0 < status"),
-			sprintf("deleted_at < 0"),
-			// sprintf("updated_at < TIMESTAMPADD(HOUR, -8, NOW())")
+			'service = ?0 AND 0<status AND deleted_at IS NULL AND updated_at < FROM_UNIXTIME(?1)',
+			'bind' => [self::service_name(), strtotime('-0 hour')],
 			'order' => 'updated_at desc',
 			'limit' => $limits
 		]);
@@ -223,11 +221,11 @@ trait ServiceTaskTrait  {
 				]);
 			}
 			$record->assign([
-				'impressions' => $this->_avalue('impressions', $data),
-				'clicks' => $this->_avalue('clicks', $data),
-				'conversions' => $this->_avalue('conversions', $data),
-				'spendings' => $this->_avalue('spendings', $data),
-				'stats' => $this->_avalue('stats', $data),
+				'impressions' => $this->_avalue('impressions', $recs),
+				'clicks' => $this->_avalue('clicks', $recs),
+				'conversions' => $this->_avalue('conversions', $recs),
+				'spendings' => $this->_avalue('spendings', $recs),
+				'stats' => $this->_avalue('stats', $recs),
 				'errors' => null,
 			]);
 			array_push($stacks, $record);
@@ -264,16 +262,22 @@ trait ServiceTaskTrait  {
 	}
 
 	protected function search_accounts_by_ids($account_ids) {
-		$_accounts = Account::find([
-			sprintf("service = '%s'", self::service_name()),
-			sprintf("uid IN (%s)", implode(',', array_map(function($account_id) {
-				return "'$account_id'";
-			}, $account_ids)))
-		]);
+		$aids  = array_map(function($aid) {
+			return "'$aid'";
+		}, $account_ids);
+
 		$rets = [];
-		foreach($_accounts as $ac) {
-			$rets[$ac->uid] = $ac;
+		if(!empty($aids)) {
+			$_accounts = Account::find([
+				sprintf('service = "%s" AND uid in (%s)', 
+					self::service_name(), 
+					implode(',', $aids)),
+			]);
+			foreach($_accounts as $ac) {
+				$rets[$ac->uid] = $ac;
+			}
 		}
+
 		return $rets;
 	}
 

@@ -109,15 +109,6 @@ trait ApiServiceTrait {
 		return $options;
 	}
 
-	protected function _queryActs($cls) {
-		$params = $this->buildQueryParams();
-		$query = $$cls::find($params);
-		$rets = [];
-		foreach($query as $entity) {
-			$rets[$query->id] = $entity->toArray();
-		}
-	}
-
 	protected function _queryValues(&$entity, $cls, $params, $key) {
 		$query = $cls::find($params);
 		foreach($query as $val) {

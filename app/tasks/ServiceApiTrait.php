@@ -80,13 +80,11 @@ trait ServiceApiTrait {
 			if($errors) {
 				$this->_access->errors = $errors;
 				$this->_access->status = -1;
-				$this->_access->save();
 				break;
 			} 
 			// no data break
 			else if(!$data) {
 				$this->_access->status = -2;
-				$this->_access->save();
 				break;
 			}
 
@@ -99,8 +97,6 @@ trait ServiceApiTrait {
 	protected function load_accounts() {
 		$token = $this->updated_token($this->_access);
 		$rets = $this->_requests('request_api_accounts', 'retrieve_api_accounts');
-		// touch the access here
-		$this->_access->save();
 
 		return $rets;
 	}
